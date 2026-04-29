@@ -29,4 +29,6 @@ class NoteModel extends Model
     {
         return $this->update($id, $data);
     }
+
+    
 }

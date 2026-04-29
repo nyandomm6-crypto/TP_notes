@@ -9,6 +9,8 @@ use CodeIgniter\Router\RouteCollection;
 // Route publique — aucun filtre
 $routes->get('/', 'AuthController::form');
 $routes->get('/dashboard', 'NoteController::dashboard');
+$routes->get('/notes/ajouter/(:num)', 'NoteController::ajouter/$1');
+$routes->post('/notes/save/(:num)', 'NoteController::sauvegarder/$1');
 
 
 // $routes->post('/login', 'AuthController::login');
