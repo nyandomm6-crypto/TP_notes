@@ -13,8 +13,11 @@ class EtudiantModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'matricule', 'nom', 'prenom', 
-        'parcours_id', 'annee_academique'
+        'matricule',
+        'nom',
+        'prenom',
+        'parcours_id',
+        'annee_academique'
     ];
 
     // Dates
@@ -56,11 +59,11 @@ class EtudiantModel extends Model
         $builder = $this->db->table('etudiants e')
             ->select('e.*, p.code, p.libelle as parcours_libelle')
             ->join('parcours p', 'p.id = e.parcours_id');
-        
+
         if ($id) {
             return $builder->where('e.id', $id)->get()->getRowArray();
         }
-        
+
         return $builder->get()->getResultArray();
     }
 
@@ -68,19 +71,25 @@ class EtudiantModel extends Model
     public function search($keyword)
     {
         return $this->groupStart()
-                    ->like('matricule', $keyword)
-                    ->orLike('nom', $keyword)
-                    ->orLike('prenom', $keyword)
-                    ->groupEnd()
-                    ->orderBy('nom', 'ASC')
-                    ->findAll();
+            ->like('matricule', $keyword)
+            ->orLike('nom', $keyword)
+            ->orLike('prenom', $keyword)
+            ->groupEnd()
+            ->orderBy('nom', 'ASC')
+            ->findAll();
     }
 
     // Obtenir les étudiants par parcours
     public function getByParcours($parcoursId)
     {
         return $this->where('parcours_id', $parcoursId)
-                    ->orderBy('nom', 'ASC')
-                    ->findAll();
+            ->orderBy('nom', 'ASC')
+            ->findAll();
+    }
+
+    // Obtenir tous les etudiants 
+    public function findAll(?int $limit = null, int $offset = 0)
+    {
+        return parent::findAll($limit, $offset);
     }
 }
