@@ -1,10 +1,10 @@
-        </div><!-- /.content -->
-    </div><!-- /.main -->
-</div><!-- /.app -->
+        </div>
+    </div>
+</div>
 
 <script>
-// Global search functionality
-document.getElementById('globalSearch')?.addEventListener('keyup', function(e) {
+// Global search
+document.getElementById('globalSearch')?.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         let keyword = this.value;
         if (keyword.length > 2) {
