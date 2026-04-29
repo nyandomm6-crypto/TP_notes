@@ -7,6 +7,7 @@
 <p><strong>Étudiant :</strong> <?= esc((string) ($etudiant['nom'] ?? 'Inconnu')) ?> (ID <?= esc((string) $etudiantId) ?>)</p>
 
 <form action="<?= base_url('notes/save/' . $etudiantId) ?>" method="post">
+    <?= csrf_field() ?>
     
     <div id="container">
         <div class="note">

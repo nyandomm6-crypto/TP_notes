@@ -8,7 +8,16 @@
 </head>
 <body>
 
+<?php $debugRedirect = session()->getFlashdata('debug_redirect'); ?>
+
 <div class="app">
+
+  <?php if ($debugRedirect): ?>
+    <?php $debugRedirectMessage = is_array($debugRedirect) ? json_encode($debugRedirect, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : (string) $debugRedirect; ?>
+    <div style="margin:16px; padding:12px 16px; border:1px solid #f59e0b; background:#fff7ed; color:#9a3412; border-radius:8px; font-family:monospace; font-size:13px;">
+      Debug redirect: <?= esc($debugRedirectMessage) ?>
+    </div>
+  <?php endif; ?>
 
   <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
   <aside class="sidebar">

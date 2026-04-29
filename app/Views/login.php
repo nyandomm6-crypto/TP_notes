@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <?= csrf_field() ?>
 
 <div class="login-page">
   <div class="login-card">

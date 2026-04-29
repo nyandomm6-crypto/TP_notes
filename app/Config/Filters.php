@@ -75,15 +75,7 @@ class Filters extends BaseFilters
      * }
      */
     public array $globals = [
-        'before' => [
-            'csrf',  // ✅ CSRF activé globalement pour toutes les requêtes POST
-            // 'honeypot',
-            // 'invalidchars',
-        ],
-        'after' => [
-            // 'honeypot',
-            // 'secureheaders',
-        ],
+    
     ];
 
     /**

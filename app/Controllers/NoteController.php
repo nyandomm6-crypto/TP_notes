@@ -1,14 +1,13 @@
-<?php 
+<?php
+
 namespace App\Controllers;
 
-class NoteController extends BaseController {
+use App\Models\EtudiantModel;
+use App\Models\NoteModel;
 
-    private const ETUDIANTS = [
-        ['id' => 1, 'nom' => 'Alice Martin'],
-        ['id' => 2, 'nom' => 'Youssef Diallo'],
-        ['id' => 3, 'nom' => 'Sara Benali'],
-        ['id' => 4, 'nom' => 'Lucas Morel'],
-    ];
+class NoteController extends BaseController
+{
+    private array $etudiants = [];
 
     private const MATIERES = [
         ['id' => 1, 'nom' => 'Math'],
@@ -17,68 +16,165 @@ class NoteController extends BaseController {
         ['id' => 4, 'nom' => 'SVT'],
     ];
 
+    public function initController(
+        \CodeIgniter\HTTP\RequestInterface $request,
+        \CodeIgniter\HTTP\ResponseInterface $response,
+        \Psr\Log\LoggerInterface $logger
+    ) {
+        parent::initController($request, $response, $logger);
+
+        // Chargement des étudiants avec leurs parcours
+        $this->etudiants = model(EtudiantModel::class)->getWithParcours();
+
+        // Log de diagnostic (à retirer en production)
+        log_message('debug', 'NoteController::initController — étudiants chargés : ' . count($this->etudiants));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers privés
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Retourne un étudiant par son ID, ou null si introuvable.
+     */
     private function getEtudiantById(int $etudiantId): ?array
     {
-        foreach (self::ETUDIANTS as $etudiant) {
+        foreach ($this->etudiants as $etudiant) {
             if ((int) $etudiant['id'] === $etudiantId) {
                 return $etudiant;
             }
         }
-
         return null;
     }
 
-    public function dashboard() {
+    /**
+     * Redirige vers le dashboard avec un message de debug flashé et loggé.
+     */
+    private function redirectDashboardDebug(string $reason, array $context = [])
+    {
+        $message = $reason;
+        if ($context !== []) {
+            $message .= ' | ' . json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+        log_message('debug', 'NoteController: ' . $message);
+        return redirect()->to('/dashboard')->with('debug_redirect', $message);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Actions publiques
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Affiche le tableau de bord principal.
+     */
+    public function dashboard()
+    {
         return view('dashboard');
     }
 
+    /**
+     * Affiche le formulaire d'ajout de notes pour un étudiant donné.
+     */
     public function ajouter(int $etudiantId = null)
     {
+        // Vérification : l'ID est-il fourni ?
         if ($etudiantId === null) {
-            return redirect()->to('/dashboard');
+            return $this->redirectDashboardDebug(
+                'ajouter() redirige vers le dashboard car etudiantId est null'
+            );
         }
 
+        // Vérification : l'étudiant existe-t-il dans la liste chargée ?
         $etudiant = $this->getEtudiantById($etudiantId);
-
         if ($etudiant === null) {
-            return redirect()->to('/dashboard');
+            return $this->redirectDashboardDebug(
+                'ajouter() redirige vers le dashboard car étudiant introuvable',
+                [
+                    'etudiantId'       => $etudiantId,
+                    'etudiantsCharges' => count($this->etudiants),
+                ]
+            );
         }
 
         return view('addNote', [
-            'etudiant' => $etudiant,
+            'etudiant'   => $etudiant,
             'etudiantId' => $etudiantId,
-            'matieres' => self::MATIERES,
+            'matieres'   => self::MATIERES,
         ]);
     }
 
+    /**
+     * Sauvegarde les notes soumises via le formulaire.
+     *
+     * CORRECTIONS apportées :
+     *  1. 'etudiant_id' utilisait la valeur en dur « 1 » — remplacé par $etudiantId.
+     *  2. Validation des notes (plage 0-20) ajoutée avant l'insertion.
+     *  3. Vérification que la matière soumise fait bien partie des matières connues.
+     */
     public function sauvegarder(int $etudiantId = null)
     {
-        $notes = (array) $this->request->getPost('note');
+        $notes    = (array) $this->request->getPost('note');
         $matieres = (array) $this->request->getPost('matiere');
 
+        // ── Vérification de l'étudiant ────────────────────────────────────
         if ($etudiantId === null || $this->getEtudiantById($etudiantId) === null) {
-            return redirect()->to('/dashboard');
+            return $this->redirectDashboardDebug(
+                "sauvegarder() redirige vers le dashboard car l'étudiant est invalide",
+                [
+                    'etudiantId'      => $etudiantId,
+                    'notesRecues'     => count($notes),
+                    'matieresRecues'  => count($matieres),
+                    'etudiantsCharges'=> count($this->etudiants),
+                ]
+            );
         }
 
-        $noteModel = model(\App\Models\NoteModel::class);
+        // ── IDs de matières valides (index rapide) ────────────────────────
+        $matiereIdsValides = array_column(self::MATIERES, 'id');
+
+        $noteModel       = model(NoteModel::class);
         $anneeAcademique = date('Y') . '-' . (date('Y') + 1);
+        $nbInseres       = 0;
 
         foreach ($notes as $index => $note) {
             $noteValue = trim((string) $note);
-            $matiereId = $matieres[$index] ?? null;
+            $matiereId = isset($matieres[$index]) ? (int) $matieres[$index] : null;
 
-            if ($noteValue === '' || $matiereId === null || $matiereId === '') {
+            // ── Ignorer les lignes vides ou sans matière ──────────────────
+            if ($noteValue === '' || $matiereId === null) {
                 continue;
             }
 
+            // ── Vérifier que la note est numérique et dans la plage 0-20 ──
+            if (!is_numeric($noteValue) || (float) $noteValue < 0 || (float) $noteValue > 20) {
+                log_message('warning', "NoteController::sauvegarder — note invalide ignorée : '{$noteValue}' (étudiant {$etudiantId}, matière {$matiereId})");
+                continue;
+            }
+
+            // ── Vérifier que la matière est connue ────────────────────────
+            if (!in_array($matiereId, $matiereIdsValides, true)) {
+                log_message('warning', "NoteController::sauvegarder — matière inconnue ignorée : {$matiereId} (étudiant {$etudiantId})");
+                continue;
+            }
+
+            // ── Insertion ─────────────────────────────────────────────────
             $noteModel->addNote([
-                'etudiant_id' => $etudiantId,
-                'matiere_id' => (int) $matiereId,
-                'note' => $noteValue,
-                'annee_academique' => $anneeAcademique,
+                'etudiant_id'     => $etudiantId,   // CORRECTION : était en dur à 1
+                'matiere_id'      => $matiereId,
+                'note'            => (float) $noteValue,
+                'annee_academique'=> $anneeAcademique,
             ]);
+
+            $nbInseres++;
         }
 
-        return redirect()->to('/notes/ajouter/' . $etudiantId)->with('success', 'Les notes ont bien été ajoutées.');
+        log_message('info', "NoteController::sauvegarder — {$nbInseres} note(s) insérée(s) pour l'étudiant {$etudiantId}");
+
+        return redirect()
+            ->to('/notes/ajouter/' . $etudiantId)
+            ->with('success', $nbInseres > 0
+                ? "{$nbInseres} note(s) ajoutée(s) avec succès."
+                : 'Aucune note valide soumise.'
+            );
     }
 }
