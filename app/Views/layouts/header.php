@@ -543,9 +543,9 @@
                 <span class="menu-icon">👥</span> Étudiants
                 <span class="badge"><?= $total_etudiants ?? '0' ?></span>
             </a>
-            <a href="<?= base_url('/notes') ?>" class="menu-item">
+            <!-- <a href="<?= base_url('/notes') ?>" class="menu-item">
                 <span class="menu-icon">📝</span> Notes
-            </a>
+            </a> -->
             <a href="<?= base_url('/bulletin') ?>" class="menu-item">
                 <span class="menu-icon">📄</span> Bulletin
             </a>
