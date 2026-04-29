@@ -24,15 +24,15 @@
 
     <div class="sidebar-section">Navigation</div>
 
-    <a href="dashboard.html" class="nav-item">
+    <a href="dashboard" class="nav-item">
       <svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
       Tableau de bord
     </a>
-    <a href="list.html" class="nav-item">
+    <a href="list" class="nav-item">
       <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       Utilisateurs
     </a>
-    <a href="form.html" class="nav-item active">
+    <a href="form" class="nav-item active">
       <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       Formulaire
     </a>
@@ -64,7 +64,7 @@
     </a>
 
     <div class="sidebar-bottom">
-      <a href="login.html" class="user-row">
+      <a href="login" class="user-row">
         <div class="avatar">AD</div>
         <div class="user-info">
           <div class="name">Admin Sys</div>
@@ -100,7 +100,7 @@
           <h2>Nouvel utilisateur</h2>
           <div class="breadcrumb">Accueil / Utilisateurs / <span>Nouveau</span></div>
         </div>
-        <a href="list.html" class="btn btn-secondary btn-sm">
+        <a href="list" class="btn btn-secondary btn-sm">
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
           Retour à la liste
         </a>
@@ -341,7 +341,7 @@
 
         <!-- ── Footer boutons ─────────────────────────────────────────── -->
         <div class="form-footer">
-          <a href="list.html" class="btn btn-secondary">Annuler</a>
+          <a href="list" class="btn btn-secondary">Annuler</a>
           <button type="button" class="btn btn-ghost">Enregistrer comme brouillon</button>
           <button type="submit" class="btn btn-primary">
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
